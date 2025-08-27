@@ -1,0 +1,2 @@
+Docker Image Build Command-> docker build -f Dockerfile -t monk_test:latest-gpu .
+Docker Container Run Command-> docker run --name monk_test --restart=always -ti --runtime=nvidia -e NVIDIA_DRIVER_CAPABILITIES=compute,utility -e NVIDIA_VISIBLE_DEVICES=all  -d -p 5501:5501 -p 9085:9085 monk_test:latest-gpu
