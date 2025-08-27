@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Brain Tumor Detector</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f8f9fa;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 40px;
+    }
+
+    .container {
+      background: #ffffff;
+      padding: 30px 40px;
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+      width: 600px;
+      text-align: center;
+    }
+
+    h2 {
+      color: #2c3e50;
+      margin-bottom: 20px;
+    }
+
+    input[type="file"] {
+      margin: 20px 0;
+      padding: 10px;
+      border: 2px dashed #007bff;
+      border-radius: 8px;
+      width: 100%;
+      cursor: pointer;
+    }
+
+    button {
+      margin: 10px;
+      padding: 12px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    #processBtn {
+      background-color: #007bff;
+      color: #fff;
+    }
+    #processBtn:hover {
+      background-color: #0056b3;
+    }
+
+    #downloadBtn {
+      background-color: #28a745;
+      color: #fff;
+      display: none;
+    }
+    #downloadBtn:hover {
+      background-color: #1e7e34;
+    }
+
+    pre {
+      background: #f1f3f6;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: left;
+      max-height: 300px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+    }
+
+    /* Loader Styling */
+    #loader {
+      display: none;
+      margin: 20px auto;
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid #007bff;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>📄 Brain Tumor Detector</h2>
+    <p>Upload a MRI, process it, and download the extracted JSON data.</p>
+
+    <input type="file" id="fileInput" accept="image/*">
+    <div>
+      <button id="processBtn" onclick="uploadImage()">🚀 Process</button>
+      <button id="downloadBtn">⬇️ Download JSON</button>
+    </div>
+
+    <!-- Loader -->
+    <div id="loader"></div>
+
+    <h3 style="margin-top: 30px; color:#2c3e50;">Extracted Data:</h3>
+    <pre id="output">No data yet...</pre>
+  </div>
+
+  <script>
+    async function uploadImage() {
+      const fileInput = document.getElementById("fileInput");
+      const loader = document.getElementById("loader");
+      const output = document.getElementById("output");
+      const downloadBtn = document.getElementById("downloadBtn");
+
+      if (!fileInput.files.length) {
+        alert("Please select an image!");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("img", fileInput.files[0]);
+
+      try {
+        // Show loader and reset output
+        loader.style.display = "block";
+        output.textContent = "Processing...";
+        downloadBtn.style.display = "none";
+
+        const response = await fetch("http://localhost:9085/generate_analysis", {
+          method: "POST",
+          body: formData
+        });
+
+        const data = await response.json();
+        output.textContent = JSON.stringify(data, null, 2);
+
+        // Prepare JSON download
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        downloadBtn.style.display = "inline-block";
+        downloadBtn.onclick = () => {
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = (data.filename || "analysis") + ".json";
+          a.click();
+        };
+      } catch (error) {
+        output.textContent = "❌ Error: " + error.message;
+      } finally {
+        // Hide loader
+        loader.style.display = "none";
+      }
+    }
+  </script>
+</body>
+</html>
+

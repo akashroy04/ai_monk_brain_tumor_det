@@ -1,0 +1,3 @@
+fastapi
+ultralytics==8.2.64
+opencv-python
